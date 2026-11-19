@@ -1,0 +1,1969 @@
+<!DOCTYPE html>
+<html lang="tr" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEB Uyumlu Akıllı Çalışma Asistanı - Türkiye Yüzyılı Maarif Modeli</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-40 backdrop-blur-md bg-white/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="resetToHome()">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                    <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight bg-gradient-to-r from-indigo-600 to-violet-500 bg-clip-text text-transparent">Akıllı Çalışma Asistanı</h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Türkiye Yüzyılı Maarif Modeli</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <div id="activeGradeBadge" class="hidden sm:flex items-center space-x-1.5 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 text-xs font-semibold">
+                    <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+                    <span id="badgeText">Sınıf Seçilmedi</span>
+                </div>
+
+                <button onclick="toggleDarkMode()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors focus:outline-none" aria-label="Tema Değiştir">
+                    <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                    <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+        <nav id="breadcrumbContainer" class="hidden mb-6 flex items-center space-x-2 text-sm text-slate-500 dark:text-slate-400 overflow-x-auto whitespace-nowrap pb-2">
+            <!-- Dynamic Breadcrumbs -->
+        </nav>
+
+        <div id="appView" class="w-full">
+            <!-- Injected by JavaScript -->
+        </div>
+    </main>
+
+    <!-- Note Check & Upload Modal -->
+    <div id="noteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden animate-fade-in">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 relative">
+            <button onclick="closeNoteModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div id="modalStep1">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-5">
+                    <i data-lucide="file-question" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Ders Notu Kontrolü</h3>
+                <p class="text-slate-600 dark:text-slate-400 text-sm mb-6">Seçtiğiniz <span id="modalTopicName" class="font-semibold text-indigo-600 dark:text-indigo-400"></span> konusuyla ilgili elinde bir ders notu var mı?</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <button onclick="selectHasNote(true)" class="flex flex-col items-start p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 bg-white dark:bg-slate-900 transition-all group text-left">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-3 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                            <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+                        </div>
+                        <span class="font-bold text-slate-900 dark:text-white mb-1">Evet, Notum Var</span>
+                        <span class="text-xs text-slate-500 dark:text-slate-400">PDF, fotoğraf yükle veya metin yapıştır.</span>
+                    </button>
+
+                    <button onclick="selectHasNote(false)" class="flex flex-col items-start p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-800 hover:border-violet-500 dark:hover:border-violet-500 bg-white dark:bg-slate-900 transition-all group text-left">
+                        <div class="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400 flex items-center justify-center mb-3 group-hover:bg-violet-600 group-hover:text-white transition-colors">
+                            <i data-lucide="sparkles" class="w-5 h-5"></i>
+                        </div>
+                        <span class="font-bold text-slate-900 dark:text-white mb-1">Notum Yok, Çalışma Alanını Aç</span>
+                        <span class="text-xs text-slate-500 dark:text-slate-400">Konu çalışma alanını aç; kendi notlarınla ilerle.</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Upload / Paste Section -->
+            <div id="modalStep2" class="hidden">
+                <div class="flex items-center space-x-3 mb-5">
+                    <button onclick="backToModalStep1()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                    </button>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">Ders Notunu Ekle</h3>
+                </div>
+
+                <div class="space-y-4">
+                    <input id="noteFileInput" type="file" accept=".txt,.md,.csv,.pdf,.png,.jpg,.jpeg" class="hidden" onchange="handleNoteFile(this.files[0])">
+                    <div id="noteDropZone" class="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-6 text-center hover:border-indigo-500 transition-colors cursor-pointer" onclick="simulateFileUpload()" ondragover="event.preventDefault(); this.classList.add('border-indigo-500')" ondragleave="this.classList.remove('border-indigo-500')" ondrop="handleNoteDrop(event)">
+                        <div class="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-3">
+                            <i data-lucide="file-up" class="w-6 h-6"></i>
+                        </div>
+                        <p class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">PDF veya Fotoğraf Sürükleyin ya da Seçin</p>
+                        <p class="text-xs text-slate-400">Maks. 25MB (PNG, JPG, PDF)</p>
+                        <div id="uploadedFileName" class="mt-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hidden"></div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1.5 uppercase tracking-wider">Veya Notu Buraya Yapıştırın</label>
+                        <textarea id="noteTextArea" rows="4" placeholder="Notlarınızı buraya yapıştırın veya özet geçin..." class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
+                    </div>
+
+                    <button onclick="processUserNote()" class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-semibold shadow-lg shadow-indigo-500/25 hover:opacity-95 transition-all flex items-center justify-center space-x-2">
+                        <i data-lucide="cpu" class="w-5 h-5"></i>
+                        <span>Notu Analiz Et & Çalışma Odasına Geç</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Loading Processing State -->
+            <div id="modalLoading" class="hidden py-8 text-center">
+                <div class="relative w-16 h-16 mx-auto mb-4">
+                    <div class="absolute inset-0 rounded-full border-4 border-indigo-200 dark:border-indigo-950 animate-pulse"></div>
+                    <div class="absolute inset-0 rounded-full border-4 border-indigo-600 border-t-transparent animate-spin"></div>
+                </div>
+                <h4 class="text-lg font-bold text-slate-900 dark:text-white mb-2" id="loadingTitle">Çalışma alanı hazırlanıyor...</h4>
+                <p class="text-sm text-slate-500 dark:text-slate-400 max-w-xs mx-auto" id="loadingSubtitle">Maarif Modeli kazanımları taranıyor ve kişiselleştirilmiş rehber hazırlanıyor.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast / Notification banner -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 flex items-center space-x-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-5 py-3.5 rounded-2xl shadow-xl">
+        <i id="toastIcon" data-lucide="check-circle" class="w-5 h-5 text-emerald-400 dark:text-emerald-600"></i>
+        <span id="toastMessage" class="text-sm font-medium">İşlem başarıyla tamamlandı.</span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-auto border-t border-slate-200 dark:border-slate-800 py-6 bg-white dark:bg-slate-900/50 text-center text-xs text-slate-500 dark:text-slate-400">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p>© 2026 Türkiye Yüzyılı Maarif Modeli Akıllı Çalışma Asistanı. Tüm Hakları Saklıdır.</p>
+            <div class="flex items-center space-x-4">
+                <span class="hover:text-indigo-600 transition-colors cursor-pointer">Gizlilik Politikası</span>
+                <span class="hover:text-indigo-600 transition-colors cursor-pointer">Kullanım Şartları</span>
+                <span class="hover:text-indigo-600 transition-colors cursor-pointer">İletişim</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // --- Curriculum Data Store (Türkiye Yüzyılı Maarif Modeli & MEB Müfredatı - Eksiksiz) ---
+        const curriculumData = {
+            grades: [
+                { id: "9", name: "9. Sınıf", icon: "compass", color: "from-emerald-500 to-teal-600" },
+                { id: "10", name: "10. Sınıf", icon: "layers", color: "from-teal-500 to-cyan-600" },
+                { id: "11", name: "11. Sınıf", icon: "target", color: "from-amber-500 to-orange-600" },
+                { id: "12", name: "12. Sınıf", icon: "zap", color: "from-orange-500 to-rose-600" },
+                { id: "mezun", name: "Mezun (YKS)", icon: "star", color: "from-rose-500 to-red-600" }
+            ],
+            courses: {
+                "9": [
+                    { id: "mat9", name: "Matematik", icon: "hash", unitsCount: 4 },
+                    { id: "edb9", name: "Türk Dili ve Edebiyatı", icon: "book-open", unitsCount: 5 },
+                    { id: "fiz9", name: "Fizik", icon: "activity", unitsCount: 4 },
+                    { id: "kim9", name: "Kimya", icon: "flask-conical", unitsCount: 4 },
+                    { id: "biy9", name: "Biyoloji", icon: "dna", unitsCount: 3 },
+                    { id: "tarih9", name: "Tarih", icon: "landmark", unitsCount: 4 },
+                    { id: "cografya9", name: "Coğrafya", icon: "globe", unitsCount: 3 }
+                ],
+                "10": [
+                    { id: "mat10", name: "Matematik", icon: "hash", unitsCount: 5 },
+                    { id: "edb10", name: "Türk Dili ve Edebiyatı", icon: "book-open", unitsCount: 5 },
+                    { id: "fiz10", name: "Fizik", icon: "activity", unitsCount: 4 },
+                    { id: "kim10", name: "Kimya", icon: "flask-conical", unitsCount: 4 },
+                    { id: "biy10", name: "Biyoloji", icon: "dna", unitsCount: 3 },
+                    { id: "tarih10", name: "Tarih", icon: "landmark", unitsCount: 5 },
+                    { id: "cografya10", name: "Coğrafya", icon: "globe", unitsCount: 3 }
+                ],
+                "11": [
+                    { id: "mat11", name: "Matematik", icon: "hash", unitsCount: 6 },
+                    { id: "edb11", name: "Türk Dili ve Edebiyatı", icon: "book-open", unitsCount: 5 },
+                    { id: "fiz11", name: "Fizik", icon: "activity", unitsCount: 6 },
+                    { id: "kim11", name: "Kimya", icon: "flask-conical", unitsCount: 6 },
+                    { id: "biy11", name: "Biyoloji", icon: "dna", unitsCount: 2 },
+                    { id: "tarih11", name: "Tarih", icon: "landmark", unitsCount: 5 },
+                    { id: "cografya11", name: "Coğrafya", icon: "globe", unitsCount: 3 }
+                ],
+                "12": [
+                    { id: "mat12", name: "Matematik (TYT-AYT)", icon: "hash", unitsCount: 7 },
+                    { id: "edb12", name: "Türk Dili ve Edebiyatı", icon: "book-open", unitsCount: 5 },
+                    { id: "fiz12", name: "Fizik (AYT)", icon: "activity", unitsCount: 6 },
+                    { id: "kim12", name: "Kimya (AYT)", icon: "flask-conical", unitsCount: 4 },
+                    { id: "biy12", name: "Biyoloji (AYT)", icon: "dna", unitsCount: 5 },
+                    { id: "tarih12", name: "Tarih (T.C. İnkılap Tarihi)", icon: "landmark", unitsCount: 6 }
+                ],
+                "mezun": [
+                    { id: "mat_mezun", name: "Matematik (TYT-AYT Kapsamlı)", icon: "hash", unitsCount: 8 },
+                    { id: "fiz_mezun", name: "Fizik (AYT Uzmanlık)", icon: "activity", unitsCount: 6 },
+                    { id: "kim_mezun", name: "Kimya (AYT Uzmanlık)", icon: "flask-conical", unitsCount: 5 },
+                    { id: "biy_mezun", name: "Biyoloji (AYT Uzmanlık)", icon: "dna", unitsCount: 6 }
+                ]
+            },
+            units: {
+                // --- 9. SINIF ---
+                "mat9": [
+                    {
+                        title: "1. Ünite: Sayılar ve Cebir",
+                        topics: [
+                            { id: "m9_1", name: "Gerçek Sayı Kümeleri ve Aralık Kavramı", duration: "30 dk" },
+                            { id: "m9_2", name: "Birinci Dereceden Denklemler ve Eşitsizlikler", duration: "40 dk" },
+                            { id: "m9_3", name: "Üslü ve Köklü İfadelerle İşlemler", duration: "35 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Fonksiyonlar",
+                        topics: [
+                            { id: "m9_4", name: "Fonksiyon Kavramı ve Gösterimi", duration: "35 dk" },
+                            { id: "m9_5", name: "İki Fonksiyonun Bileşkesi ve Ters Fonksiyon", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: Veri, İstatistik ve Olasılık",
+                        topics: [
+                            { id: "m9_6", name: "Merkezi Eğilim ve Yayılım Ölçüleri", duration: "30 dk" },
+                            { id: "m9_7", name: "Olasılık Kavramı ve Temel Olaylar", duration: "35 dk" }
+                        ]
+                    },
+                    {
+                        title: "4. Ünite: Geometri (Üçgenler)",
+                        topics: [
+                            { id: "m9_8", name: "Üçgenlerde Temel Kavramlar ve Eşlik", duration: "40 dk" },
+                            { id: "m9_9", name: "Üçgende Benzerlik ve Açı-Kenar Bağıntıları", duration: "45 dk" }
+                        ]
+                    }
+                ],
+                "edb9": [
+                    {
+                        title: "1. Ünite: Giriş",
+                        topics: [
+                            { id: "e9_1", name: "Edebiyatın Tanımı, Bilim ve Sanatla İlişkisi", duration: "25 dk" },
+                            { id: "e9_2", name: "Metinlerin Sınıflandırılması (Sanatsal ve Öğretici)", duration: "30 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Hikâye",
+                        topics: [
+                            { id: "e9_3", name: "Hikâyenin Unsurları (Olay, Mekan, Zaman, Kişi)", duration: "30 dk" },
+                            { id: "e9_4", name: "Hikâye Türleri (Olay ve Durum Hikayesi)", duration: "35 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: Şiir",
+                        topics: [
+                            { id: "e9_5", name: "Şiirde Ahenk Unsurları (Ölçü, Kafiye, Redif)", duration: "40 dk" },
+                            { id: "e9_6", name: "Şiir Türleri ve Nazım Şekilleri", duration: "35 dk" }
+                        ]
+                    },
+                    {
+                        title: "4. Ünite: Masal ve Fabl",
+                        topics: [
+                            { id: "e9_7", name: "Masalın Özellikleri ve Yapı Unsurları", duration: "30 dk" },
+                            { id: "e9_8", name: "Fabl Türü ve Evrensel Değerler İlişkisi", duration: "30 dk" }
+                        ]
+                    },
+                    {
+                        title: "5. Ünite: Biyografi ve Otobiyografi",
+                        topics: [
+                            { id: "e9_9", name: "Biyografi ile Otobiyografi Karşılaştırılması", duration: "30 dk" }
+                        ]
+                    }
+                ],
+                "fiz9": [
+                    {
+                        title: "1. Ünite: Fizik Bilimine Giriş",
+                        topics: [
+                            { id: "f9_1", name: "Fiziğin Doğası ve Alt Alanları", duration: "25 dk" },
+                            { id: "f9_2", name: "Fiziksel Niceliklerin Sınıflandırılması (Skaler/Vektörel)", duration: "30 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Madde ve Özellikleri",
+                        topics: [
+                            { id: "f9_3", name: "Özkütle ve Dayanıklılık", duration: "35 dk" },
+                            { id: "f9_4", name: "Adhezyon, Kohezyon ve Yüzey Gerilimi", duration: "35 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: Kuvvet ve Hareket",
+                        topics: [
+                            { id: "f9_5", name: "Kuvvet Çeşitleri ve Newton'un Hareket Kanunları", duration: "45 dk" },
+                            { id: "f9_6", name: "Sürtünme Kuvveti ve Günlük Hayat Etkileri", duration: "35 dk" }
+                        ]
+                    },
+                    {
+                        title: "4. Ünite: Enerji",
+                        topics: [
+                            { id: "f9_7", name: "İş, Güç ve Enerji İlişkisi", duration: "40 dk" },
+                            { id: "f9_8", name: "Enerjinin Korunumu ve Verimlilik", duration: "35 dk" }
+                        ]
+                    }
+                ],
+                "kim9": [
+                    {
+                        title: "1. Ünite: Kimya Bilimi",
+                        topics: [
+                            { id: "k9_1", name: "Simyadan Kimyaya Geçiş ve Kimya Disiplinleri", duration: "30 dk" },
+                            { id: "k9_2", name: "Kimya Güvenliği ve Temel Laboratuvar Malzemeleri", duration: "30 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Atom ve Periyodik Sistem",
+                        topics: [
+                            { id: "k9_3", name: "Atom Modelleri (Dalton, Thomson, Rutherford, Bohr)", duration: "40 dk" },
+                            { id: "k9_4", name: "Periyodik Sistem ve Elementlerin Sınıflandırılması", duration: "40 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: Kimyasal Türler Arası Etkileşimler",
+                        topics: [
+                            { id: "k9_5", name: "Güçlü Etkileşimler (İyonik, Kovalent ve Metalik Bağ)", duration: "45 dk" },
+                            { id: "k9_6", name: "Zayıf Etkileşimler (Hidrojen Bağı ve Van der Waals)", duration: "40 dk" }
+                        ]
+                    },
+                    {
+                        title: "4. Ünite: Maddenin Halleri",
+                        topics: [
+                            { id: "k9_7", name: "Katılar, Sıvılar ve Gazların Genel Özellikleri", duration: "35 dk" }
+                        ]
+                    }
+                ],
+                "biy9": [
+                    {
+                        title: "1. Ünite: Yaşam Bilimi Biyoloji",
+                        topics: [
+                            { id: "b9_1", name: "Canlıların Ortak Özellikleri", duration: "30 dk" },
+                            { id: "b9_2", name: "Canlıların Temel Bileşenleri (İnorganik ve Organik)", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Hücre",
+                        topics: [
+                            { id: "b9_3", name: "Hücre Teorisi ve Hücrenin Yapısı (Organeller)", duration: "45 dk" },
+                            { id: "b9_4", name: "Madde Geçişleri (Pasif ve Aktif Taşınma)", duration: "40 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: Canlılar Dünyası",
+                        topics: [
+                            { id: "b9_5", name: "Canlıların Sınıflandırılması ve Çeşitlilik", duration: "40 dk" }
+                        ]
+                    }
+                ],
+                "tarih9": [
+                    {
+                        title: "1. Ünite: Tarih ve Zaman",
+                        topics: [
+                            { id: "th9_1", name: "Tarih Biliminin Konusu, Yöntemi ve Kaynakları", duration: "30 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: İnsanlığın İlk Dönemleri",
+                        topics: [
+                            { id: "th9_2", name: "Yazının Gelişimi ve İlk Çağ Medeniyetleri", duration: "40 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: Orta Çağ’da Dünya",
+                        topics: [
+                            { id: "th9_3", name: "Orta Çağ'da Siyasi, Askeri ve Sosyal Yapılar", duration: "35 dk" }
+                        ]
+                    },
+                    {
+                        title: "4. Ünite: İlk ve Orta Çağlarda Türk Dünyası",
+                        topics: [
+                            { id: "th9_4", name: "Orta Asya Türk Devletleri ve Yaşam Tarzı", duration: "40 dk" }
+                        ]
+                    }
+                ],
+                "cografya9": [
+                    {
+                        title: "1. Ünite: Doğal Sistemler",
+                        topics: [
+                            { id: "cg9_1", name: "Dünya'nın Şekli, Hareketi ve Koordinat Sistemi", duration: "40 dk" },
+                            { id: "cg9_2", name: "İklim Bilgisi ve Atmosfer Olayları", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Beşeri Sistemler",
+                        topics: [
+                            { id: "cg9_3", name: "Nüfusun Gelişimi, Dağılışı ve Özellikleri", duration: "35 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: Küresel Ortam: Bölgeler ve Ülkeler",
+                        topics: [
+                            { id: "cg9_4", name: "Bölge Kavramı ve Türleri", duration: "30 dk" }
+                        ]
+                    }
+                ],
+
+                // --- 10. SINIF ---
+                "mat10": [
+                    {
+                        title: "1. Ünite: Sayma ve Olasılık",
+                        topics: [
+                            { id: "m10_1", name: "Toplama ve Çarpma Yoluyla Sayma", duration: "30 dk" },
+                            { id: "m10_2", name: "Permütasyon, Kombinasyon ve Binom Açılımı", duration: "45 dk" },
+                            { id: "m10_3", name: "Koşullu Olasılık ve Deneysel/Teorik Olasılık", duration: "40 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Fonksiyonlarda Uygulamalar",
+                        topics: [
+                            { id: "m10_4", name: "Fonksiyonların Grafikleri ve Dönüşümler", duration: "40 dk" },
+                            { id: "m10_5", name: "İkinci Dereceden Fonksiyonlar ve Maksimum/Minimum Problemleri", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: Polinomlar ve Çarpanlara Ayırma",
+                        topics: [
+                            { id: "m10_6", name: "Polinom Kavramı ve Polinomlarda İşlemler", duration: "40 dk" },
+                            { id: "m10_7", name: "Çarpanlara Ayırma Yöntemleri ve Özdeşlikler", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "4. Ünite: Dörtgenler ve Çokgenler",
+                        topics: [
+                            { id: "m10_8", name: "Çokgenler ve Özel Dörtgenler (Paralelkenar, Eşkenar Dörtgen, Yamaç)", duration: "50 dk" }
+                        ]
+                    },
+                    {
+                        title: "5. Ünite: Katı Cisimler",
+                        topics: [
+                            { id: "m10_9", name: "Prizmalar, Piramitler, Silindir, Koni ve Küre", duration: "45 dk" }
+                        ]
+                    }
+                ],
+                "edb10": [
+                    {
+                        title: "1. Ünite: Giriş ve Hikâye",
+                        topics: [
+                            { id: "e10_1", name: "Öyküleyici Anlatım Biçimi ve Cumhuriyet Dönemi Hikâyesi", duration: "35 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Şiir",
+                        topics: [
+                            { id: "e10_2", name: "Divan Edebiyatı Nazım Şekilleri ve Ahenk", duration: "45 dk" },
+                            { id: "e10_3", name: "Halk Şiiri Geleneği ve Temsilcileri", duration: "40 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: Roman",
+                        topics: [
+                            { id: "e10_4", name: "Tanzimat ve Servet-i Fünun Dönemi Romanı", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "4. Ünite: Tiyatro",
+                        topics: [
+                            { id: "e10_5", name: "Geleneksel Türk Tiyatrosu ve Modern Tiyatro", duration: "35 dk" }
+                        ]
+                    },
+                    {
+                        title: "5. Ünite: Mektup ve E-posta",
+                        topics: [
+                            { id: "e10_6", name: "Özel Mektup ile İş Mektuplarının Özellikleri", duration: "30 dk" }
+                        ]
+                    }
+                ],
+                "fiz10": [
+                    {
+                        title: "1. Ünite: Elektrik ve Manyetizma",
+                        topics: [
+                            { id: "f10_1", name: "Elektrik Akımı, Potansiyel Fark ve Direnç (Ohm Kanunu)", duration: "45 dk" },
+                            { id: "f10_2", name: "Elektrik Devreleri ve Üreteçlerin Bağlanması", duration: "40 dk" },
+                            { id: "f10_3", name: "Mıknatıs ve Manyetik Alan Kavramı", duration: "35 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Basınç ve Kaldırma Kuvveti",
+                        topics: [
+                            { id: "f10_4", name: "Katı, Sıvı ve Gazlarda Basınç (Pascal Prensibi)", duration: "40 dk" },
+                            { id: "f10_5", name: "Sıvıların Kaldırma Kuvveti ve Arşimet Kanunu", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: Dalgalar",
+                        topics: [
+                            { id: "f10_6", name: "Temel Dalga Hareketleri ve Yay/Su Dalgaları", duration: "40 dk" },
+                            { id: "f10_7", name: "Ses ve Deprem Dalgaları", duration: "35 dk" }
+                        ]
+                    },
+                    {
+                        title: "4. Ünite: Optik",
+                        topics: [
+                            { id: "f10_8", name: "Aydınlanma ve Gölge Oluşumu", duration: "35 dk" },
+                            { id: "f10_9", name: "Yansıma, Kırılma, Mercekler ve Prizmalar", duration: "50 dk" }
+                        ]
+                    }
+                ],
+                "kim10": [
+                    {
+                        title: "1. Ünite: Kimyanın Temel Kanunları ve Mol Hesaplamaları",
+                        topics: [
+                            { id: "k10_1", name: "Kütlenin Korunumu ve Sabit/Katlı Oranlar Kanunu", duration: "40 dk" },
+                            { id: "k10_2", name: "Mol Kavramı ve Avogadro Sayısı Hesaplamaları", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Kimyasal Tepkimeler ve Hesaplamalar",
+                        topics: [
+                            { id: "k10_3", name: "Kimyasal Tepkimeleri Denkleştirme ve Hesaplamalar", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: Karışımlar",
+                        topics: [
+                            { id: "k10_4", name: "Homojen ve Heterojen Karışımlar (Çözeltiler)", duration: "40 dk" },
+                            { id: "k10_5", name: "Derişim Birimleri (Yüzde, PPM, Molarite)", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "4. Ünite: Asitler, Bazlar ve Tuzlar",
+                        topics: [
+                            { id: "k10_6", name: "Asit ve Bazların Genel Özellikleri, pH Kavramı", duration: "40 dk" }
+                        ]
+                    }
+                ],
+                "biy10": [
+                    {
+                        title: "1. Ünite: Hücre Bölünmeleri",
+                        topics: [
+                            { id: "b10_1", name: "Mitoz Bölünme ve Eşeysiz Üreme Esasları", duration: "45 dk" },
+                            { id: "b10_2", name: "Mayoz Bölünme ve Eşeyli Üremeye Katkısı", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Kalıtımın Temel İlkeleri",
+                        topics: [
+                            { id: "b10_3", name: "Mendil Genetiği, Monohibrit ve Dihibrit Çaprazlamalar", duration: "50 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: Ekoloji",
+                        topics: [
+                            { id: "b10_4", name: "Ekosistem Ekolojisi ve Madde Döngüleri", duration: "40 dk" }
+                        ]
+                    }
+                ],
+                "tarih10": [
+                    {
+                        title: "1. Ünite: Yerleşme ve Devletleşme Sürecinde Selçuklu Türkiye’si",
+                        topics: [
+                            { id: "th10_1", name: "Türklerin Anadolu'ya Yerleşmesi ve Haçlı Seferleri", duration: "40 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Beylikten Devlete Osmanlı Siyaseti (1300-1453)",
+                        topics: [
+                            { id: "th10_2", name: "Osmanlı Beyliği'nin Kuruluşu ve Büyüme Stratejisi", duration: "40 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: Dünya Gücü Osmanlı (1453-1600)",
+                        topics: [
+                            { id: "th10_3", name: "İstanbul'un Fethi ve Cihan Hâkimiyeti Siyaseti", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "4. Ünite: Sultan ve Siyaset",
+                        topics: [
+                            { id: "th10_4", name: "Osmanlı'da Devlet Teşkilatı ve İdari Yapı", duration: "35 dk" }
+                        ]
+                    },
+                    {
+                        title: "5. Ünite: Değişen Dünya Dengeleri Karşısında Osmanlı Siyaseti",
+                        topics: [
+                            { id: "th10_5", name: "17. Yüzyılda İç ve Dış Siyasi Gelişmeler", duration: "40 dk" }
+                        ]
+                    }
+                ],
+                "cografya10": [
+                    {
+                        title: "1. Ünite: Doğal Sistemler",
+                        topics: [
+                            { id: "cg10_1", name: "Yerin Yapısı, Levha Tektoniği ve Jeolojik Zamanlar", duration: "40 dk" },
+                            { id: "cg10_2", name: "İç ve Dış Kuvvetler (Dağ oluşumu, Volkanizma, Akarsular)", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Beşeri Sistemler",
+                        topics: [
+                            { id: "cg10_3", name: "Türkiye'de Nüfus ve Yerleşme Özellikleri", duration: "40 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: Küresel Ortam",
+                        topics: [
+                            { id: "cg10_4", name: "Ulaşım Yolları ve Küresel Ticaret", duration: "35 dk" }
+                        ]
+                    }
+                ],
+
+                // --- 11. SINIF ---
+                "mat11": [
+                    {
+                        title: "1. Ünite: Trigonometri",
+                        topics: [
+                            { id: "m11_1", name: "Yönlü Açılar, Birim Çember ve Trigonometrik Fonksiyonlar", duration: "45 dk" },
+                            { id: "m11_2", name: "Trigonometrik Özdeşlikler ve Toplam-Fark Formülleri", duration: "50 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Analitik Geometri",
+                        topics: [
+                            { id: "m11_3", name: "Doğrunun Analitik İncelemesi ve Noktanın Doğruya Uzaklığı", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: Fonksiyonlarda Uygulamalar",
+                        topics: [
+                            { id: "m11_4", name: "Fonksiyonların İşareti, Artanlık-Azalanlık ve Maksimum-Minimum", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "4. Ünite: Denklem ve Eşitsizlik Sistemleri",
+                        topics: [
+                            { id: "m11_5", name: "İkinci Dereceden İki Bilinmeyenli Denklem Sistemleri", duration: "40 dk" },
+                            { id: "m11_6", name: "İkinci Dereceden Eşitsizlikler ve Eşitsizlik Sistemleri", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "5. Ünite: Çember ve Daire",
+                        topics: [
+                            { id: "m11_7", name: "Çemberde Açı, Teğet ve Uzunluk Bağıntıları", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "6. Ünite: Uzay Geometri",
+                        topics: [
+                            { id: "m11_8", name: "Katı Cisimlerin Yüzey Alanı ve Hacim Hesapları", duration: "40 dk" }
+                        ]
+                    }
+                ],
+                "edb11": [
+                    {
+                        title: "1. Ünite: Giriş",
+                        topics: [
+                            { id: "e11_1", name: "Türk Edebiyatında Dönemler ve Tarihsel Arka Plan", duration: "30 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Hikâye",
+                        topics: [
+                            { id: "e11_2", name: "Milli Edebiyat ve Cumhuriyet Dönemi (1923-1950) Hikâyesi", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: Şiir",
+                        topics: [
+                            { id: "e11_3", name: "Beş Hececiler, Saf Şiir ve Garip Akımı", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "4. Ünite: Roman",
+                        topics: [
+                            { id: "e11_4", name: "1950-1980 Arası Cumhuriyet Dönemi Romanı ve Toplumcu Gerçekçiler", duration: "50 dk" }
+                        ]
+                    },
+                    {
+                        title: "5. Ünite: Tiyatro ve Eleştiri",
+                        topics: [
+                            { id: "e11_5", name: "Cumhuriyet Döneminde Tiyatro ve Edebi Eleştiri Türü", duration: "35 dk" }
+                        ]
+                    }
+                ],
+                "fiz11": [
+                    {
+                        title: "1. Ünite: Vektörler",
+                        topics: [
+                            { id: "f11_1", name: "Vektörlerin Toplanması ve Bileşenlerine Ayrılması", duration: "40 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Kuvvet ve Hareket",
+                        topics: [
+                            { id: "f11_2", name: "Bağıl Hareket ve Nehir Problemleri", duration: "40 dk" },
+                            { id: "f11_3", name: "Newton'un Hareket Kanunları (Dinamik Uygulamaları)", duration: "50 dk" },
+                            { id: "f11_4", name: "Bir Boyutta Sabit İvmeli Hareket ve Atışlar", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: İş, Güç ve Enerji",
+                        topics: [
+                            { id: "f11_5", name: "Esneklik Potansiyel Enerjisi ve Enerjinin Korunumu", duration: "40 dk" }
+                        ]
+                    },
+                    {
+                        title: "4. Ünite: İtme ve Momentum",
+                        topics: [
+                            { id: "f11_6", name: "İtme, Çizgisel Momentum ve Momentumun Korunumu", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "5. Ünite: Tork, Denge ve Basit Makineler",
+                        topics: [
+                            { id: "f11_7", name: "Tork (Moment), Denge Şartları ve Basit Makineler", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "6. Ünite: Elektrik ve Manyetizma",
+                        topics: [
+                            { id: "f11_8", name: "Elektriksel Kuvvet, Elektrik Alan ve Sığa (Kondansatörler)", duration: "45 dk" }
+                        ]
+                    }
+                ],
+                "kim11": [
+                    {
+                        title: "1. Ünite: Modern Atom Teorisi",
+                        topics: [
+                            { id: "k11_1", name: "Kuantum Sayıları ve Orbital Türleri (s, p, d, f)", duration: "45 dk" },
+                            { id: "k11_2", name: "Periyodik Özelliklerin Değişimi", duration: "40 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Gazlar",
+                        topics: [
+                            { id: "k11_3", name: "Gazların Özellikleri ve İdeal Gaz Yasası", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: Sıvı Çözeltiler",
+                        topics: [
+                            { id: "k11_4", name: "Çözünürlük, Derişim Hesapları ve Koligatif Özellikler", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "4. Ünite: Kimyasal Tepkimelerde Enerji",
+                        topics: [
+                            { id: "k11_5", name: "Endotermik/Ekzotermik Tepkimeler ve Hess Kanunu", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "5. Ünite: Kimyasal Tepkimelerde Hız ve Denge",
+                        topics: [
+                            { id: "k11_6", name: "Tepkime Hızı ve Hız Bağıntıları", duration: "40 dk" },
+                            { id: "k11_7", name: "Kimyasal Denge ve Dengeyi Etkileyen Faktörler (Le Chatelier)", duration: "50 dk" }
+                        ]
+                    }
+                ],
+                "biy11": [
+                    {
+                        title: "1. Ünite: İnsan Fizyolojisi",
+                        topics: [
+                            { id: "b11_1", name: "Sinir Sistemi ve Endokrin Sistem (Hormonlar)", duration: "50 dk" },
+                            { id: "b11_2", name: "Duyu Organları ve Destek-Hareket Sistemi", duration: "45 dk" },
+                            { id: "b11_3", name: "Sindirim, Dolaşım, Solunum, Boşaltım ve Üreme Sistemleri", duration: "60 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Komünite ve Popülasyon Ekolojisi",
+                        topics: [
+                            { id: "b11_4", name: "Komünitelerde Beslenme İlişkileri ve Popülasyon Dinamikleri", duration: "45 dk" }
+                        ]
+                    }
+                ],
+                "tarih11": [
+                    {
+                        title: "1. Ünite: Değişen Dünya Dengeleri Karşısında Osmanlı Siyaseti",
+                        topics: [
+                            { id: "th11_1", name: "18. Yüzyılda Osmanlı Devleti ve Avrupa İlişkileri", duration: "40 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: En Uzun Yüzyıl (19. Yüzyıl)",
+                        topics: [
+                            { id: "th11_2", name: "Nizam-ı Cedid'den Tanzimat'a Osmanlı'da Islahatlar", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: Sermaye ve Emek",
+                        topics: [
+                            { id: "th11_3", name: "Sanayi Devrimi ve Küresel Ekonomik Dönüşüm", duration: "35 dk" }
+                        ]
+                    },
+                    {
+                        title: "4. Ünite: XIX. ve XX. Yüzyılda Değişen Gündelik Hayat",
+                        topics: [
+                            { id: "th11_4", name: "Osmanlı'da ve Dünyada Sosyal Hayat", duration: "35 dk" }
+                        ]
+                    },
+                    {
+                        title: "5. Ünite: XX. Yüzyıl Başlarında Osmanlı Devleti ve Dünya",
+                        topics: [
+                            { id: "th11_5", name: "I. Dünya Savaşı'na Giden Süreç ve Bloklaşmalar", duration: "45 dk" }
+                        ]
+                    }
+                ],
+                "cografya11": [
+                    {
+                        title: "1. Ünite: Doğal Sistemler",
+                        topics: [
+                            { id: "cg11_1", name: "Biyoçeşitlilik ve Ekosistemlerin İşleyişi", duration: "40 dk" },
+                            { id: "cg11_2", name: "Türkiye'de ve Dünyada Su Kaynakları", duration: "35 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Beşeri Sistemler",
+                        topics: [
+                            { id: "cg11_3", name: "Geçmişten Geleceğe Şehirler ve Ekonomik Faaliyetler", duration: "40 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: Küresel Ortam ve Çevre",
+                        topics: [
+                            { id: "cg11_4", name: "Çevre Sorunları ve Küresel İklim Değişikliği", duration: "40 dk" }
+                        ]
+                    }
+                ],
+
+                // --- 12. SINIF ---
+                "mat12": [
+                    {
+                        title: "1. Ünite: Temel Kavramlar ve TYT Tekrar",
+                        topics: [
+                            { id: "m12_1", name: "Temel Kavramlar ve Sayı Basamakları", duration: "35 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Üstel ve Logaritmik Fonksiyonlar",
+                        topics: [
+                            { id: "m12_2", name: "Üstel Fonksiyon ve Logaritma Özellikleri", duration: "45 dk" },
+                            { id: "m12_3", name: "Logaritmik Denklemler ve Eşitsizlikler", duration: "40 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: Diziler",
+                        topics: [
+                            { id: "m12_4", name: "Aritmetik ve Geometrik Diziler", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "4. Ünite: Trigonometri (İleri Düzey)",
+                        topics: [
+                            { id: "m12_5", name: "Trigonometrik Denklemler ve Ters Trigonometrik Fonksiyonlar", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "5. Ünite: Limit ve Süreklilik",
+                        topics: [
+                            { id: "m12_6", name: "Limit Kavramı ve Süreklilik Şartları", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "6. Ünite: Türev",
+                        topics: [
+                            { id: "m12_7", name: "Türev Alma Kuralları, Artan-Azalan Fonksiyonlar ve Ekstremum Noktaları", duration: "55 dk" }
+                        ]
+                    },
+                    {
+                        title: "7. Ünite: İntegral",
+                        topics: [
+                            { id: "m12_8", name: "Belirsiz ve Belirli İntegral, Alan Hesaplamaları", duration: "55 dk" }
+                        ]
+                    }
+                ],
+                "edb12": [
+                    {
+                        title: "1. Ünite: Cumhuriyet Dönemi Türk Edebiyatı (1960 Sonrası)",
+                        topics: [
+                            { id: "e12_1", name: "1960 Sonrası Roman, Şiir ve Tiyatro Eğilimleri", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Dünya Edebiyatı",
+                        topics: [
+                            { id: "e12_2", name: "Modernizm, Postmodernizm ve Dünya Edebiyatında Akımlar", duration: "40 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: Metin İnceleme ve Sınav Provası",
+                        topics: [
+                            { id: "e12_3", name: "YKS Türk Dili ve Edebiyatı Soru Çözüm Stratejileri", duration: "50 dk" }
+                        ]
+                    },
+                    {
+                        title: "4. Ünite: Deneme ve Söylev",
+                        topics: [
+                            { id: "e12_4", name: "Cumhuriyet Döneminde Deneme ve Söylev Örnekleri", duration: "35 dk" }
+                        ]
+                    },
+                    {
+                        title: "5. Ünite: Sınav Odaklı Paragraf ve Anlam Bilgisi",
+                        topics: [
+                            { id: "e12_5", name: "Paragrafın Yapısı, Anlamı ve Ana Düşünce", duration: "45 dk" }
+                        ]
+                    }
+                ],
+                "fiz12": [
+                    {
+                        title: "1. Ünite: Çembersel Hareket",
+                        topics: [
+                            { id: "f12_1", name: "Düzgün Çembersel Hareket ve Yatay/Düşey Virajlar", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Basit Harmonik Hareket",
+                        topics: [
+                            { id: "f12_2", name: "Basit Harmonik Harekette Konum, Hız, İvme ve Yay Sarkacı", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: Dalga Mekaniği",
+                        topics: [
+                            { id: "f12_3", name: "Su Dalgalarında Girişim ve Çift Yarıkta Girişim (Young Deneyi)", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "4. Ünite: Atom Fiziği ve Radyoaktivite",
+                        topics: [
+                            { id: "f12_4", name: "Atomun Kuantum Modeli ve Radyoaktif Bozunmalar", duration: "40 dk" }
+                        ]
+                    },
+                    {
+                        title: "5. Ünite: Modern Fizik",
+                        topics: [
+                            { id: "f12_5", name: "Özel Görelilik, Fotoelektrik Olay ve Compton Saçılması", duration: "50 dk" }
+                        ]
+                    },
+                    {
+                        title: "6. Ünite: Modern Fiziğin Teknolojideki Uygulamaları",
+                        topics: [
+                            { id: "f12_6", name: "Görüntüleme Teknolojileri, Lazerler ve Nanoteknoloji", duration: "40 dk" }
+                        ]
+                    }
+                ],
+                "kim12": [
+                    {
+                        title: "1. Ünite: Kimya ve Elektrik",
+                        topics: [
+                            { id: "k12_1", name: "İndirgenme-Yükseltgenme Tepkimeleri ve Elektrokimyasal Piller", duration: "50 dk" },
+                            { id: "k12_2", name: "Elektroliz ve Korozyon", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Karbon Kimyasına Giriş",
+                        topics: [
+                            { id: "k12_3", name: "Anorganik ve Organik Bileşikler, Hibritleşme ve Molekül Geometrileri", duration: "50 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: Hidrokarbonlar",
+                        topics: [
+                            { id: "k12_4", name: "Alkanlar, Alkenler, Alkinler ve Aromatik Bileşikler", duration: "50 dk" }
+                        ]
+                    },
+                    {
+                        title: "4. Ünite: Fonksiyonel Gruplar",
+                        topics: [
+                            { id: "k12_5", name: "Alkoller, Eterler, Aldehitler, Ketonlar, Karboksilik Asitler ve Esterler", duration: "55 dk" }
+                        ]
+                    }
+                ],
+                "biy12": [
+                    {
+                        title: "1. Ünite: Genden Proteine",
+                        topics: [
+                            { id: "b12_1", name: "Nükleik Asitlerin Keşfi, DNA ve RNA Yapısı", duration: "45 dk" },
+                            { id: "b12_2", name: "Protein Sentezi, Genetik Şifre ve Mutasyonlar", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Canlılarda Enerji Dönüşümleri",
+                        topics: [
+                            { id: "b12_3", name: "Fotosentez ve Kemosentez Reaksiyonları", duration: "50 dk" },
+                            { id: "b12_4", name: "Hücresel Solunum (Glikoliz, Krebs, Oksidatif Fosforilasyon)", duration: "50 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: Bitki Biyolojisi",
+                        topics: [
+                            { id: "b12_5", name: "Bitkilerin Yapısı, Madde Taşınması ve Eşeyli Üreme", duration: "50 dk" }
+                        ]
+                    },
+                    {
+                        title: "4. Ünite: Canlılar ve Çevre",
+                        topics: [
+                            { id: "b12_6", name: "Biyosfer ve Çevre Sorunları", duration: "35 dk" }
+                        ]
+                    },
+                    {
+                        title: "5. Ünite: YKS Biyoloji Deneme ve Tekrar",
+                        topics: [
+                            { id: "b12_7", name: "AYT Biyoloji Soru Analizi ve Çıkmış Sorular", duration: "40 dk" }
+                        ]
+                    }
+                ],
+                "tarih12": [
+                    {
+                        title: "1. Ünite: T.C. İnkılap Tarihi ve Atatürkçülük (Giriş)",
+                        topics: [
+                            { id: "th12_1", name: "XX. Yüzyıl Başlarında Osmanlı Devleti ve Mondros Ateşkesi", duration: "40 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Milli Mücadele Dönemi",
+                        topics: [
+                            { id: "th12_2", name: "Kongreler Dönemi, Misak-ı Milli ve TBMM'nin Açılışı", duration: "45 dk" },
+                            { id: "th12_3", name: "Kurtuluş Savaşı'nda Cepheler ve Antlaşmalar", duration: "50 dk" }
+                        ]
+                    },
+                    {
+                        title: "3. Ünite: Atatürkçülük ve Türk İnkılabı",
+                        topics: [
+                            { id: "th12_4", name: "Siyasi, Hukuki, Eğitim ve Ekonomik Alanında İnkılaplar", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "4. Ünite: Atatürk Dönemi Türk Dış Politikası",
+                        topics: [
+                            { id: "th12_5", name: "Milletler Cemiyeti Üyeliği, Sadabat Paktı ve Montrö", duration: "40 dk" }
+                        ]
+                    },
+                    {
+                        title: "5. Ünite: İkinci Dünya Savaşı Sürecinde Türkiye ve Dünya",
+                        topics: [
+                            { id: "th12_6", name: "Savaşın Türkiye'ye Etkileri ve Çok Partili Hayata Geçiş", duration: "40 dk" }
+                        ]
+                    },
+                    {
+                        title: "6. Ünite: Soğuk Savaş Dönemi",
+                        topics: [
+                            { id: "th12_7", name: "Kutup Borçlanmaları, NATO, Varşova Paktı ve Kıbrıs Meseleleri", duration: "45 dk" }
+                        ]
+                    }
+                ],
+
+                // --- MEZUN (YKS) ---
+                "mat_mezun": [
+                    {
+                        title: "1. Ünite: TYT Matematik Kapsamlı Tekrar",
+                        topics: [
+                            { id: "mm_1", name: "Temel Kavramlar, Bölünebilme ve Rasyonel Sayılar", duration: "45 dk" },
+                            { id: "mm_2", name: "Birinci Dereceden Denklemler, Oran-Orantı ve Problemler", duration: "60 dk" },
+                            { id: "mm_3", name: "Kümeler, Fonksiyonlar ve Polinomlar", duration: "50 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: AYT Matematik İleri Düzey Analiz",
+                        topics: [
+                            { id: "mm_4", name: "İkinci Dereceden Denklemler, Eşitsizlikler ve Parabol", duration: "50 dk" },
+                            { id: "mm_5", name: "Trigonometri ve Karmaşık Sayılar", duration: "55 dk" },
+                            { id: "mm_6", name: "Logaritma ve Diziler", duration: "45 dk" },
+                            { id: "mm_7", name: "Limit, Türev ve İntegral Ustaca Çözüm", duration: "60 dk" },
+                            { id: "mm_8", name: "Olasılık, Permütasyon, Kombinasyon ve İstatistik", duration: "45 dk" }
+                        ]
+                    }
+                ],
+                "fiz_mezun": [
+                    {
+                        title: "1. Ünite: TYT Fizik Ustalaşma",
+                        topics: [
+                            { id: "fz_m1", name: "Madde, Özellikleri, Basınç ve Kaldırma Kuvveti", duration: "45 dk" },
+                            { id: "fz_m2", name: "Isı, Sıcaklık, Genleşme ve Optik", duration: "50 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: AYT Fizik Uzmanlık",
+                        topics: [
+                            { id: "fz_m3", name: "Vektörler, Bağıl Hareket, Newton Kanunları ve Atışlar", duration: "55 dk" },
+                            { id: "fz_m4", name: "İtme-Momentum, Tork-Denge ve Basit Makineler", duration: "50 dk" },
+                            { id: "fz_m5", name: "Elektrik, Manyetizma, Transformatörler ve Alternatif Akım", duration: "55 dk" },
+                            { id: "fz_m6", name: "Çembersel Hareket, Basit Harmonik Hareket ve Modern Fizik", duration: "60 dk" }
+                        ]
+                    }
+                ],
+                "kim_mezun": [
+                    {
+                        title: "1. Ünite: TYT Kimya Master Serisi",
+                        topics: [
+                            { id: "km_m1", name: "Kimya Bilimi, Atom Modelleri ve Periyodik Sistem", duration: "40 dk" },
+                            { id: "km_m2", name: "Kimyasal Türler, Maddenin Halleri ve Karışımlar", duration: "45 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: AYT Kimya Master Serisi",
+                        topics: [
+                            { id: "km_m3", name: "Modern Atom Teorisi, Gazlar ve Çözeltiler", duration: "55 dk" },
+                            { id: "km_m4", name: "Kimyasal Tepkimelerde Enerji, Hız ve Denge", duration: "55 dk" },
+                            { id: "km_m5", name: "Kimya ve Elektrik ile Organik Kimya (Hidrokarbonlar ve Fonksiyonel Gruplar)", duration: "60 dk" }
+                        ]
+                    }
+                ],
+                "biy_mezun": [
+                    {
+                        title: "1. Ünite: TYT Biyoloji Master Serisi",
+                        topics: [
+                            { id: "by_m1", name: "Canlıların Ortak Özellikleri ve Temel Bileşenler", duration: "40 dk" },
+                            { id: "by_m2", name: "Hücre Yapısı, Organeller, Madde Taşınımı ve Ekoloji", duration: "50 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: AYT Biyoloji Master Serisi",
+                        topics: [
+                            { id: "by_m3", name: "Hücre Bölünmeleri, Mitoz/Mayoz ve Kalıtım", duration: "50 dk" },
+                            { id: "by_m4", name: "İnsan Fizyolojisi (Sinir, Endokrin, Dolaşım, Solunum vb.)", duration: "60 dk" },
+                            { id: "by_m5", name: "Genden Proteine, Solunum ve Fotosentez", duration: "55 dk" },
+                            { id: "by_m6", name: "Bitki Biyolojisi ve Populasyon Ekolojisi", duration: "45 dk" }
+                        ]
+                    }
+                ],
+
+                // Fallback for any missing course mapping
+                default: [
+                    {
+                        title: "1. Ünite: Temel Kavramlar ve Beceri Odaklı Giriş",
+                        topics: [
+                            { id: "t1", name: "Konu 1: Temel İlke ve Tanımlar (Maarif Modeli)", duration: "30 dk" },
+                            { id: "t2", name: "Konu 2: Kavramsal Analiz ve Uygulama", duration: "35 dk" }
+                        ]
+                    },
+                    {
+                        title: "2. Ünite: Derinlemesine İnceleme ve Problem Çözme",
+                        topics: [
+                            { id: "t3", name: "Konu 1: Analitik Düşünme Stratejileri", duration: "35 dk" },
+                            { id: "t4", name: "Konu 2: Örnek Olay İncelemeleri", duration: "45 dk" }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        // --- Application State ---
+        let appState = {
+            currentView: 'grades', // 'grades' | 'courses' | 'units' | 'study'
+            selectedGrade: null,
+            selectedGradeName: '',
+            selectedCourse: null,
+            selectedCourseName: '',
+            selectedTopic: null,
+            hasNote: false,
+            uploadedNoteContent: '',
+            activeTab: 'summary', // 'summary' | 'tactics' | 'video' | 'quiz'
+            quizAnswers: {},
+            quizSubmitted: false
+        };
+
+        // --- Dark Mode Handler ---
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Initialize Theme preference
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        // --- Navigation / Routing ---
+        function resetToHome() {
+            appState.currentView = 'grades';
+            appState.selectedGrade = null;
+            appState.selectedGradeName = '';
+            appState.selectedCourse = null;
+            appState.selectedCourseName = '';
+            appState.selectedTopic = null;
+            render();
+        }
+
+        function selectGrade(gradeId, gradeName) {
+            appState.selectedGrade = gradeId;
+            appState.selectedGradeName = gradeName;
+            appState.currentView = 'courses';
+            showToast(`${gradeName} seçildi. Maarif Modeli dersleri yükleniyor...`);
+            render();
+        }
+
+        function selectCourse(courseId, courseName) {
+            appState.selectedCourse = courseId;
+            appState.selectedCourseName = courseName;
+            appState.currentView = 'units';
+            showToast(`${courseName} dersi açıldı.`);
+            render();
+        }
+
+        function openNoteModal(topicObj) {
+            appState.selectedTopic = topicObj;
+            document.getElementById('modalTopicName').innerText = topicObj.name;
+            document.getElementById('noteModal').classList.remove('hidden');
+            document.getElementById('modalStep1').classList.remove('hidden');
+            document.getElementById('modalStep2').classList.add('hidden');
+            document.getElementById('modalLoading').classList.add('hidden');
+            document.getElementById('noteTextArea').value = '';
+            document.getElementById('uploadedFileName').classList.add('hidden');
+            appState.uploadedNoteContent = '';
+        }
+
+        function closeNoteModal() {
+            document.getElementById('noteModal').classList.add('hidden');
+        }
+
+        function selectHasNote(hasNote) {
+            appState.hasNote = hasNote;
+            if (hasNote) {
+                document.getElementById('modalStep1').classList.add('hidden');
+                document.getElementById('modalStep2').classList.remove('hidden');
+            } else {
+                triggerLoadingAndEnterStudy(false);
+            }
+        }
+
+        function backToModalStep1() {
+            document.getElementById('modalStep2').classList.add('hidden');
+            document.getElementById('modalStep1').classList.remove('hidden');
+        }
+
+        function simulateFileUpload() {
+            document.getElementById('noteFileInput').click();
+        }
+
+        function handleNoteDrop(event) {
+            event.preventDefault();
+            document.getElementById('noteDropZone').classList.remove('border-indigo-500');
+            const file = event.dataTransfer.files && event.dataTransfer.files[0];
+            if (file) handleNoteFile(file);
+        }
+
+        async function handleNoteFile(file) {
+            if (!file) return;
+            if (file.size > 25 * 1024 * 1024) { showToast('Dosya 25 MB sınırını aşıyor.'); return; }
+            const nameEl = document.getElementById('uploadedFileName');
+            nameEl.textContent = 'Dosya okunuyor: ' + file.name;
+            nameEl.classList.remove('hidden');
+            try {
+                let content = '';
+                const ext = file.name.split('.').pop().toLowerCase();
+                if (['txt','md','csv'].includes(ext) || file.type.startsWith('text/')) {
+                    content = await file.text();
+                } else if (ext === 'pdf' || file.type === 'application/pdf') {
+                    content = await extractPdfText(file);
+                } else if (['png','jpg','jpeg'].includes(ext) || file.type.startsWith('image/')) {
+                    nameEl.textContent = 'Görsel seçildi: ' + file.name + ' — Bu sürüm görselden yazı (OCR) çıkaramıyor. Metni aşağıya yapıştır.';
+                    showToast('Görsel eklendi; yazıyı ayrıca yapıştırmalısın.');
+                    return;
+                } else {
+                    throw new Error('Desteklenmeyen dosya türü. TXT, MD, CSV, PDF veya görsel seç.');
+                }
+                if (!content.trim()) throw new Error('Dosyada okunabilir metin bulunamadı. Taranmış PDF ise metni yapıştır.');
+                appState.uploadedNoteContent = content.slice(0, 100000);
+                document.getElementById('noteTextArea').value = appState.uploadedNoteContent;
+                nameEl.textContent = '✓ Okundu: ' + file.name;
+                showToast('Dosya metni başarıyla alındı.');
+            } catch (error) {
+                nameEl.textContent = error.message;
+                showToast(error.message);
+            }
+        }
+
+        async function extractPdfText(file) {
+            if (!window.pdfjsLib) {
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+                    script.onload = resolve; script.onerror = () => reject(new Error('PDF okuyucu yüklenemedi. İnternet bağlantını kontrol et.'));
+                    document.head.appendChild(script);
+                });
+            }
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            const pdf = await pdfjsLib.getDocument({data: await file.arrayBuffer()}).promise;
+            let allText = '';
+            for (let pageNo = 1; pageNo <= Math.min(pdf.numPages, 60); pageNo++) {
+                const page = await pdf.getPage(pageNo);
+                const textContent = await page.getTextContent();
+                allText += textContent.items.map(item => item.str).join(' ') + '\n';
+            }
+            return allText;
+        }
+
+        function processUserNote() {
+            const text = document.getElementById('noteTextArea').value.trim() || appState.uploadedNoteContent.trim();
+            if (!text) { showToast('Önce bir not yapıştır veya okunabilir bir dosya seç.'); return; }
+            appState.uploadedNoteContent = text.slice(0, 100000);
+            triggerLoadingAndEnterStudy(true);
+        }
+
+        function buildLocalSummary(raw) {
+            const sentences = raw.replace(/\s+/g, ' ').split(/(?<=[.!?])\s+/).filter(x => x.trim().length > 35);
+            const chosen = sentences.slice(0, 4);
+            return chosen.length ? chosen.join(' ') : raw.slice(0, 650);
+        }
+
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+        }
+
+        function triggerLoadingAndEnterStudy(hasCustomNote) {
+            appState.hasNote = Boolean(hasCustomNote);
+            document.getElementById('modalStep1').classList.add('hidden');
+            document.getElementById('modalStep2').classList.add('hidden');
+            const loadingEl = document.getElementById('modalLoading');
+            loadingEl.classList.remove('hidden');
+
+            const titleEl = document.getElementById('loadingTitle');
+            const subEl = document.getElementById('loadingSubtitle');
+
+            if (hasCustomNote) {
+                titleEl.innerText = "Notlar çalışma alanına aktarılıyor...";
+                subEl.innerText = "Not metni tarayıcıda okunuyor; dış servise gönderilmiyor.";
+            } else {
+                titleEl.innerText = "Çalışma alanı hazırlanıyor...";
+                subEl.innerText = "Seçtiğin konu için çalışma araçları açılıyor.";
+            }
+
+            setTimeout(() => {
+                closeNoteModal();
+                appState.currentView = 'study';
+                appState.activeTab = 'summary';
+                appState.quizAnswers = {};
+                appState.quizSubmitted = false;
+                showToast("Çalışma alanı hazır!");
+                render();
+            }, 1800);
+        }
+
+        // --- Render Engine ---
+        function render() {
+            updateBadge();
+            updateBreadcrumbs();
+            
+            const container = document.getElementById('appView');
+            container.innerHTML = '';
+
+            switch (appState.currentView) {
+                case 'grades':
+                    container.innerHTML = renderGradesView();
+                    break;
+                case 'courses':
+                    container.innerHTML = renderCoursesView();
+                    break;
+                case 'units':
+                    container.innerHTML = renderUnitsView();
+                    break;
+                case 'study':
+                    container.innerHTML = renderStudyView();
+                    break;
+            }
+
+            lucide.createIcons();
+        }
+
+        function updateBadge() {
+            const badge = document.getElementById('activeGradeBadge');
+            const badgeText = document.getElementById('badgeText');
+            if (appState.selectedGradeName) {
+                badge.classList.remove('hidden');
+                badgeText.innerText = appState.selectedGradeName;
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function updateBreadcrumbs() {
+            const nav = document.getElementById('breadcrumbContainer');
+            if (appState.currentView === 'grades') {
+                nav.classList.add('hidden');
+                return;
+            }
+
+            nav.classList.remove('hidden');
+            let html = `
+                <button onclick="resetToHome()" class="hover:text-indigo-600 dark:hover:text-indigo-400 font-medium flex items-center space-x-1">
+                    <i data-lucide="home" class="w-3.5 h-3.5"></i>
+                    <span>Ana Sayfa</span>
+                </button>
+            `;
+
+            if (appState.selectedGradeName) {
+                html += `
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+                    <button onclick="appState.currentView='courses'; render();" class="hover:text-indigo-600 dark:hover:text-indigo-400 font-medium">
+                        ${appState.selectedGradeName}
+                    </button>
+                `;
+            }
+
+            if (appState.selectedCourseName) {
+                html += `
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+                    <button onclick="appState.currentView='units'; render();" class="hover:text-indigo-600 dark:hover:text-indigo-400 font-medium">
+                        ${appState.selectedCourseName}
+                    </button>
+                `;
+            }
+
+            if (appState.selectedTopic) {
+                html += `
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+                    <span class="text-indigo-600 dark:text-indigo-400 font-semibold truncate max-w-[200px] sm:max-w-xs">
+                        ${appState.selectedTopic.name}
+                    </span>
+                `;
+            }
+
+            nav.innerHTML = html;
+        }
+
+        // --- View 1: Grades Selection (9, 10, 11, 12, Mezun) ---
+        function renderGradesView() {
+            return `
+                <div class="max-w-5xl mx-auto animate-fade-in">
+                    <div class="text-center mb-10">
+                        <span class="px-3.5 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 text-xs font-bold uppercase tracking-wider mb-4 inline-block border border-indigo-200/60 dark:border-indigo-800/60">
+                            Türkiye Yüzyılı Maarif Modeli
+                        </span>
+                        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3">
+                            Hangi Sınıftasın?
+                        </h2>
+                        <p class="text-slate-600 dark:text-slate-400 text-base max-w-xl mx-auto">
+                            Lise kademeleri ve YKS hazırlık süreci için güncel Maarif Modeli müfredatımıza hoş geldin. Başlamak için sınıfını seç.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 max-w-4xl mx-auto">
+                        ${curriculumData.grades.map(g => `
+                            <button onclick="selectGrade('${g.id}', '${g.name}')" class="group relative flex flex-col items-center justify-center p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr ${g.color} text-white flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform">
+                                    <i data-lucide="${g.icon}" class="w-7 h-7"></i>
+                                </div>
+                                <span class="font-bold text-slate-900 dark:text-white text-base group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                    ${g.name}
+                                </span>
+                                <span class="text-xs text-slate-400 dark:text-slate-500 mt-1">Maarif Modeli Uyumlu</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- View 2: Course List ---
+        function renderCoursesView() {
+            const courses = curriculumData.courses[appState.selectedGrade] || curriculumData.courses["9"];
+            return `
+                <div class="max-w-5xl mx-auto animate-fade-in">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <button onclick="resetToHome()" class="inline-flex items-center space-x-2 text-sm font-semibold text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 mb-2 transition-colors">
+                                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                                <span>Sınıf Değiştir</span>
+                            </button>
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
+                                ${appState.selectedGradeName} Dersleri
+                            </h2>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+                        ${courses.map(c => `
+                            <button onclick="selectCourse('${c.id}', '${c.name}')" class="flex items-center p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 shadow-sm hover:shadow-lg transition-all text-left group">
+                                <div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mr-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors shrink-0">
+                                    <i data-lucide="${c.icon}" class="w-6 h-6"></i>
+                                </div>
+                                <div class="flex-grow min-w-0">
+                                    <h3 class="font-bold text-slate-900 dark:text-white text-base truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                        ${c.name}
+                                    </h3>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                        ${c.unitsCount} Ünite • Maarif Modeli
+                                    </p>
+                                </div>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400 group-hover:translate-x-1 transition-transform ml-2"></i>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- View 3: Units & Topics ---
+        function renderUnitsView() {
+            const units = curriculumData.units[appState.selectedCourse] || curriculumData.units.default;
+            return `
+                <div class="max-w-4xl mx-auto animate-fade-in">
+                    <div class="mb-8">
+                        <button onclick="appState.currentView='courses'; render();" class="inline-flex items-center space-x-2 text-sm font-semibold text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 mb-2 transition-colors">
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                            <span>Derslere Dön</span>
+                        </button>
+                        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
+                            ${appState.selectedCourseName} - Ünite ve Konular
+                        </h2>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                            Türkiye Yüzyılı Maarif Modeli'ne birebir uygun tüm ünite ve konu başlıkları aşağıdadır. Çalışmak istediğin konuya tıkla.
+                        </p>
+                    </div>
+
+                    <div class="space-y-4">
+                        ${units.map((unit, uIdx) => `
+                            <div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+                                <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                                    <h3 class="font-bold text-slate-900 dark:text-white text-base">
+                                        ${unit.title}
+                                    </h3>
+                                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400">
+                                        ${unit.topics.length} Konu
+                                    </span>
+                                </div>
+                                <div class="divide-y divide-slate-100 dark:divide-slate-800">
+                                    ${unit.topics.map(topic => `
+                                        <div onclick='openNoteModal(${JSON.stringify(topic)})' class="px-6 py-4 flex items-center justify-between hover:bg-indigo-50/50 dark:hover:bg-slate-800/40 cursor-pointer transition-colors group">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                                                    ✓
+                                                </div>
+                                                <span class="font-medium text-slate-800 dark:text-slate-200 text-sm group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                                    ${topic.name}
+                                                </span>
+                                            </div>
+                                            <div class="flex items-center space-x-3">
+                                                <span class="text-xs text-slate-400 hidden sm:inline">${topic.duration}</span>
+                                                <span class="text-xs font-semibold px-3 py-1.5 rounded-xl bg-indigo-600 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center space-x-1">
+                                                    <span>Çalışmaya Başla</span>
+                                                    <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- View 4: Study Module Dashboard ---
+        function renderStudyView() {
+            const topic = appState.selectedTopic || { name: "Genel Konu Başlığı" };
+            return `
+                <div class="max-w-5xl mx-auto animate-fade-in">
+                    <div class="bg-gradient-to-r from-indigo-600 to-violet-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl mb-8 relative overflow-hidden">
+                        <div class="absolute -right-10 -bottom-10 w-60 h-60 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                        <div class="flex items-center justify-between mb-4">
+                            <button onclick="appState.currentView='units'; render();" class="inline-flex items-center space-x-1.5 text-xs font-semibold bg-white/25 hover:bg-white/35 px-3.5 py-1.5 rounded-xl transition-colors backdrop-blur-md">
+                                <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                                <span>Konulara Dön</span>
+                            </button>
+                            <span class="text-xs font-semibold px-3 py-1 rounded-full bg-white/25 backdrop-blur-md">
+                                ${appState.hasNote ? '✓ Not Eklendi' : 'Çalışma Alanı'}
+                            </span>
+                        </div>
+                        <h2 class="text-2xl sm:text-3xl font-extrabold mb-2">${topic.name}</h2>
+                        <p class="text-indigo-100 text-sm max-w-2xl">
+                            Konu anlatımı, notların, çalışma süren ve test sonuçların tek yerde.
+                        </p>
+                    </div>
+
+                    <!-- Personal study tracker -->
+                    <section class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                        <div class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+                            <div class="flex items-center justify-between mb-3">
+                                <div><p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Odaklanma sayacı</p><p id="focusTimer" class="text-3xl font-extrabold tabular-nums mt-1">25:00</p></div>
+                                <div class="w-11 h-11 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 flex items-center justify-center"><i data-lucide="timer" class="w-6 h-6"></i></div>
+                            </div>
+                            <div class="flex gap-2"><button id="timerToggle" onclick="toggleFocusTimer()" class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold">Başlat</button><button onclick="resetFocusTimer()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-semibold">Sıfırla</button><select id="timerDuration" onchange="changeFocusDuration(this.value)" class="ml-auto min-w-0 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent px-2 text-xs"><option value="25">25 dk</option><option value="40">40 dk</option><option value="50">50 dk</option></select></div>
+                            <p class="text-xs text-slate-500 mt-3">Sayaç bu sayfa açıkken çalışır.</p>
+                        </div>
+                        <div class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
+                            <div class="flex items-center justify-between mb-3"><div><p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Konu ilerlemen</p><p class="text-sm font-bold mt-1">Tamamladığın çalışma oturumu</p></div><i data-lucide="target" class="w-6 h-6 text-emerald-600"></i></div>
+                            <p class="text-3xl font-extrabold tabular-nums"><span id="sessionCount">0</span> <span class="text-sm font-medium text-slate-500">oturum</span></p>
+                            <button onclick="completeStudySession()" class="mt-3 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold">Bu oturumu tamamladım</button>
+                            <p class="text-xs text-slate-500 mt-2">İlerleme bu cihazda saklanır.</p>
+                        </div>
+                    </section>
+
+                    <!-- Tabs Navigation -->
+                    <div class="flex items-center space-x-2 border-b border-slate-200 dark:border-slate-800 mb-8 overflow-x-auto pb-px">
+                        <button onclick="switchTab('summary')" class="flex items-center space-x-2 px-5 py-3 border-b-2 font-semibold text-sm transition-all whitespace-nowrap ${appState.activeTab === 'summary' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}">
+                            <i data-lucide="book-open" class="w-4 h-4"></i>
+                            <span>Konu Anlatımı</span>
+                        </button>
+                        <button onclick="switchTab('tactics')" class="flex items-center space-x-2 px-5 py-3 border-b-2 font-semibold text-sm transition-all whitespace-nowrap ${appState.activeTab === 'tactics' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}">
+                            <i data-lucide="lightbulb" class="w-4 h-4"></i>
+                            <span>Nasıl Çalışmalıyım?</span>
+                        </button>
+                        <button onclick="switchTab('video')" class="flex items-center space-x-2 px-5 py-3 border-b-2 font-semibold text-sm transition-all whitespace-nowrap ${appState.activeTab === 'video' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}">
+                            <i data-lucide="play-circle" class="w-4 h-4"></i>
+                            <span>YouTube Video</span>
+                        </button>
+                        <button onclick="switchTab('quiz')" class="flex items-center space-x-2 px-5 py-3 border-b-2 font-semibold text-sm transition-all whitespace-nowrap ${appState.activeTab === 'quiz' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}">
+                            <i data-lucide="help-circle" class="w-4 h-4"></i>
+                            <span>Anında Test (Quiz)</span>
+                        </button>
+                    </div>
+
+                    <!-- Tab Contents -->
+                    <div id="tabContent">
+                        ${renderTabContent()}
+                    </div>
+                </div>
+            `;
+        }
+
+        function switchTab(tabName) {
+            appState.activeTab = tabName;
+            document.getElementById('tabContent').innerHTML = renderTabContent();
+            lucide.createIcons();
+        }
+
+        function renderTabContent() {
+            switch (appState.activeTab) {
+                case 'summary':
+                    return `
+                        <div class="space-y-6 animate-fade-in">
+                            <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-sm">
+                                <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center space-x-2">
+                                    <i data-lucide="sparkles" class="w-5 h-5 text-indigo-600 dark:text-indigo-400"></i>
+                                    <span>Konu çalışma rehberi</span>
+                                </h3>
+                                ${appState.hasNote && appState.uploadedNoteContent ? `
+                                    <div class="mb-6 p-4 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800 text-sm text-indigo-900 dark:text-indigo-200">
+                                        <p class="font-bold mb-2 flex items-center space-x-1.5"><i data-lucide="file-text" class="w-4 h-4"></i><span>Notlarından hızlı çıkarım</span></p>
+                                        <p class="mb-2">${escapeHtml(buildLocalSummary(appState.uploadedNoteContent))}</p>
+                                        <p class="text-xs opacity-75">Bu bölüm metindeki cümleleri seçerek oluşturulur; yapay zekâ değerlendirmesi değildir.</p>
+                                    </div>
+                                ` : `
+                                    <div class="mb-6 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-sm text-amber-900 dark:text-amber-200">Henüz not eklemedin. Konu anlatımını kendi ders notlarınla desteklemek için konu listesinden tekrar not ekleyebilirsin.</div>
+                                `}
+                                <div class="space-y-4 text-slate-700 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
+                                    <p class="font-medium text-slate-900 dark:text-white">
+                                        Bu başlıklar çalışırken kullanabileceğin genel bir kontrol listesidir. Dersin gerçek kazanımlarını öğretmeninin ve MEB kaynağının içeriğiyle karşılaştır:
+                                    </p>
+                                    <ul class="space-y-3 pl-2">
+                                        <li class="flex items-start space-x-3">
+                                            <span class="w-2 h-2 rounded-full bg-indigo-600 mt-2 shrink-0"></span>
+                                            <span><strong>Temel kavramlar:</strong> Konudaki terimleri kendi cümlelerinle tanımla.</span>
+                                        </li>
+                                        <li class="flex items-start space-x-3">
+                                            <span class="w-2 h-2 rounded-full bg-indigo-600 mt-2 shrink-0"></span>
+                                            <span><strong>Örnek:</strong> Her kavram için bir örnek veya günlük hayat bağlantısı bul.</span>
+                                        </li>
+                                        <li class="flex items-start space-x-3">
+                                            <span class="w-2 h-2 rounded-full bg-indigo-600 mt-2 shrink-0"></span>
+                                            <span><strong>Kontrol:</strong> Konudan sonra kolay, orta ve zor seviyede soru çöz; yanlışlarını not et.</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                case 'tactics':
+                    return `
+                        <div class="space-y-6 animate-fade-in">
+                            <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-sm">
+                                <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center space-x-2">
+                                    <i data-lucide="lightbulb" class="w-5 h-5 text-amber-500"></i>
+                                    <span>Bu Konuyu Nasıl Çalışmalıyım? (Maarif Modeli Taktikleri)</span>
+                                </h3>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div class="p-5 rounded-2xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60">
+                                        <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold mb-4">1</div>
+                                        <h4 class="font-bold text-slate-900 dark:text-white mb-2">Beceri Temelli Okuma</h4>
+                                        <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">Metni ezberlemek yerine neden-sonuç ilişkileri kurarak zihninde haritalandır.</p>
+                                    </div>
+                                    <div class="p-5 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800/60">
+                                        <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold mb-4">2</div>
+                                        <h4 class="font-bold text-slate-900 dark:text-white mb-2">Uygulamalı Problem Çözümü</h4>
+                                        <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">Yeni nesil ve beceri temelli sorularda öncülleri dikkatle analiz et.</p>
+                                    </div>
+                                    <div class="p-5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60">
+                                        <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold mb-4">3</div>
+                                        <h4 class="font-bold text-slate-900 dark:text-white mb-2">Yansıtıcı Düşünme</h4>
+                                        <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">Çalışma sonunda kendine "Bu bilgiyi nerede kullanabilirim?" sorusunu sor.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                case 'video':
+                    return `
+                        <div class="space-y-6 animate-fade-in">
+                            <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-sm">
+                                <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center space-x-2">
+                                    <i data-lucide="play-circle" class="w-5 h-5 text-rose-500"></i>
+                                    <span>Önerilen YouTube Ders Videosu</span>
+                                </h3>
+                                <p class="text-sm text-slate-600 dark:text-slate-400 mb-6">
+                                    Seçtiğin konu için YouTube üzerinde ders anlatımı ara. Video içeriği uygulama tarafından doğrulanmaz.
+                                </p>
+                                <div class="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-900 relative group">
+                                    <div class="aspect-video w-full flex items-center justify-center bg-gradient-to-tr from-slate-900 via-slate-800 to-indigo-950 relative">
+                                        <div class="absolute inset-0 opacity-40 bg-[radial-gradient(#6366f1_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                                        <div class="text-center p-6 relative z-10">
+                                            <div class="w-16 h-16 rounded-full bg-rose-600 text-white flex items-center justify-center mx-auto mb-4 shadow-xl group-hover:scale-110 transition-transform cursor-pointer" onclick="openVideoPlayerModal()">
+                                                <i data-lucide="play" class="w-8 h-8 ml-1"></i>
+                                            </div>
+                                            <h4 class="text-white font-bold text-base sm:text-lg mb-1">${appState.selectedTopic ? appState.selectedTopic.name : 'Ders Anlatımı'}</h4>
+                                            <p class="text-slate-400 text-xs">Maarif Modeli Uyumlu Konu Anlatımı (Eğitim Stüdyoları)</p>
+                                        </div>
+                                    </div>
+                                    <div class="p-4 bg-white dark:bg-slate-900 flex items-center justify-between">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-9 h-9 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-600 flex items-center justify-center font-bold text-xs">MEB</div>
+                                            <div>
+                                                <p class="text-sm font-bold text-slate-900 dark:text-white">Maarif Eğitim Kanalı</p>
+                                                <p class="text-xs text-slate-400">22.100 İzlenme • Yeni Müfredat</p>
+                                            </div>
+                                        </div>
+                                        <a href="https://www.youtube.com/results?search_query=${encodeURIComponent((appState.selectedCourseName || '') + ' ' + (appState.selectedTopic ? appState.selectedTopic.name : '') + ' konu anlatımı')}" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-md transition-colors flex items-center space-x-1.5">
+                                            <span>YouTube'da Aç</span>
+                                            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                case 'quiz':
+                    const questions = [
+                        {
+                            id: 1,
+                            q: "Türkiye Yüzyılı Maarif Modeli'ne göre bu konunun temel kavramsal odak noktası hangisidir?",
+                            options: ["Beceri temelli uygulama ve akıl yürütme", "Ezbere dayalı formül tespiti", "Sadece tarihsel bilgi", "Rastgele tahmin"],
+                            answer: 0
+                        },
+                        {
+                            id: 2,
+                            q: "Yeni nesil beceri temelli sorularda başarılı olmak için öncelikli olarak ne yapılmalıdır?",
+                            options: ["Soruyu hızlıca geçmek", "Öncülleri ve kavram bağlamını dikkatle analiz etmek", "İşlem yapmadan şık sallamak", "Sadece uzun soruları çözmek"],
+                            answer: 1
+                        },
+                        {
+                            id: 3,
+                            q: "Konu çalışıldıktan sonra kalıcılığı artırmak için hangi yöntem önerilir?",
+                            options: ["Hiç tekrar etmemek", "Aralıklı tekrar ve yansıtıcı düşünme", "Sadece video izlemek", "Notları saklamak"],
+                            answer: 1
+                        }
+                    ];
+
+                    return `
+                        <div class="space-y-6 animate-fade-in">
+                            <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-sm">
+                                <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2 flex items-center space-x-2">
+                                    <i data-lucide="help-circle" class="w-5 h-5 text-indigo-600 dark:text-indigo-400"></i>
+                                    <span>Anında Test / Mini Quiz</span>
+                                </h3>
+                                <p class="text-sm text-slate-600 dark:text-slate-400 mb-6">Maarif Modeli kazanım kavrama testi ile konuyu ne kadar anladığını test et.</p>
+
+                                <div class="space-y-8">
+                                    ${questions.map((item, idx) => `
+                                        <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
+                                            <p class="font-bold text-slate-900 dark:text-white text-sm sm:text-base mb-4">
+                                                ${idx + 1}. ${item.q}
+                                            </p>
+                                            <div class="space-y-2.5">
+                                                ${item.options.map((opt, oIdx) => {
+                                                    const isSelected = appState.quizAnswers[item.id] === oIdx;
+                                                    const isCorrect = item.answer === oIdx;
+                                                    let btnClass = "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-indigo-500";
+                                                    
+                                                    if (appState.quizSubmitted) {
+                                                        if (isCorrect) {
+                                                            btnClass = "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 font-bold";
+                                                        } else if (isSelected && !isCorrect) {
+                                                            btnClass = "border-rose-500 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-200";
+                                                        }
+                                                    } else if (isSelected) {
+                                                        btnClass = "border-indigo-600 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 font-semibold";
+                                                    }
+
+                                                    return `
+                                                        <button onclick="selectQuizAnswer(${item.id}, ${oIdx})" ${appState.quizSubmitted ? 'disabled' : ''} class="w-full text-left px-4 py-3 rounded-xl border-2 transition-all text-sm flex items-center justify-between ${btnClass}">
+                                                            <span>${opt}</span>
+                                                            ${appState.quizSubmitted && isCorrect ? '<i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i>' : ''}
+                                                        </button>
+                                                    `;
+                                                }).join('')}
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+
+                                <div class="mt-8 flex items-center justify-between">
+                                    ${!appState.quizSubmitted ? `
+                                        <button onclick="submitQuiz()" class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 transition-all">
+                                            Testi Tamamla & Sonucu Gör
+                                        </button>
+                                    ` : `
+                                        <div class="flex items-center space-x-4">
+                                            <div class="text-sm font-bold text-slate-900 dark:text-white">
+                                                Sonuç: ${calculateQuizScore()}/3 Doğru
+                                            </div>
+                                            <button onclick="resetQuiz()" class="px-5 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold transition-colors">
+                                                Tekrar Çöz
+                                            </button>
+                                        </div>
+                                    `}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+            }
+        }
+
+        function selectQuizAnswer(questionId, optionIndex) {
+            if (appState.quizSubmitted) return;
+            appState.quizAnswers[questionId] = optionIndex;
+            document.getElementById('tabContent').innerHTML = renderTabContent();
+            lucide.createIcons();
+        }
+
+        function submitQuiz() {
+            appState.quizSubmitted = true;
+            document.getElementById('tabContent').innerHTML = renderTabContent();
+            lucide.createIcons();
+            showToast("Test değerlendirildi!");
+        }
+
+        function resetQuiz() {
+            appState.quizAnswers = {};
+            appState.quizSubmitted = false;
+            document.getElementById('tabContent').innerHTML = renderTabContent();
+            lucide.createIcons();
+        }
+
+        function calculateQuizScore() {
+            const answers = appState.quizAnswers;
+            const correctMap = { 1: 0, 2: 1, 3: 1 };
+            let score = 0;
+            for (let qId in correctMap) {
+                if (answers[qId] === correctMap[qId]) score++;
+            }
+            return score;
+        }
+
+        function openVideoPlayerModal() {
+            showToast("Video oynatıcı açılıyor...");
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const msg = document.getElementById('toastMessage');
+            msg.innerText = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+
+        // --- Local study tracker ---
+        let focusRemaining = 25 * 60;
+        let focusInterval = null;
+        let focusDuration = 25;
+        const progressKey = 'maarifStudySessionsV1';
+        function getSessionCount() {
+            try { return Number(JSON.parse(localStorage.getItem(progressKey) || '{}')[appState.selectedTopic?.id || 'general'] || 0); }
+            catch (_) { return 0; }
+        }
+        function updateSessionCount() {
+            const el = document.getElementById('sessionCount');
+            if (el) el.textContent = getSessionCount();
+        }
+        function completeStudySession() {
+            let data = {};
+            try { data = JSON.parse(localStorage.getItem(progressKey) || '{}'); } catch (_) {}
+            const key = appState.selectedTopic?.id || 'general';
+            data[key] = Number(data[key] || 0) + 1;
+            localStorage.setItem(progressKey, JSON.stringify(data));
+            updateSessionCount();
+            showToast('Çalışma oturumu kaydedildi.');
+        }
+        function formatFocusTime() {
+            const el = document.getElementById('focusTimer');
+            if (el) el.textContent = String(Math.floor(focusRemaining / 60)).padStart(2,'0') + ':' + String(focusRemaining % 60).padStart(2,'0');
+        }
+        function toggleFocusTimer() {
+            const btn = document.getElementById('timerToggle');
+            if (focusInterval) {
+                clearInterval(focusInterval); focusInterval = null;
+                if (btn) btn.textContent = 'Devam et';
+                return;
+            }
+            if (focusRemaining <= 0) focusRemaining = focusDuration * 60;
+            if (btn) btn.textContent = 'Duraklat';
+            focusInterval = setInterval(() => {
+                focusRemaining = Math.max(0, focusRemaining - 1); formatFocusTime();
+                if (focusRemaining === 0) {
+                    clearInterval(focusInterval); focusInterval = null;
+                    if (btn) btn.textContent = 'Başlat';
+                    showToast('Odaklanma süresi tamamlandı. Mola verebilirsin.');
+                }
+            }, 1000);
+        }
+        function resetFocusTimer() {
+            if (focusInterval) clearInterval(focusInterval);
+            focusInterval = null; focusRemaining = focusDuration * 60;
+            const btn = document.getElementById('timerToggle'); if (btn) btn.textContent = 'Başlat';
+            formatFocusTime();
+        }
+        function changeFocusDuration(value) {
+            focusDuration = Math.max(1, Math.min(120, Number(value) || 25));
+            resetFocusTimer();
+        }
+
+        window.addEventListener('keydown', event => { if (event.key === 'Escape') closeNoteModal(); });
+        window.onload = function() {
+            render();
+        };
+    </script>
+</body>
+</html>
